@@ -1,8 +1,7 @@
-// APIServer.ts (Placeholder showing the required fix)
+// APIServer.ts
 
 import express from 'express';
 import { logger } from './logger.js';
-// FIX TS2305: Import the entire WorkerPool class which now exports getStats()
 import { WorkerPool } from './WorkerPool.js'; 
 
 export class APIServer {
@@ -10,21 +9,27 @@ export class APIServer {
     private port: number = 3000;
     private workerPool: WorkerPool;
 
-    constructor(workerPool: WorkerPool) {
+    constructor(workerPool: WorkerPool, port: number = 3000) {
         this.app = express();
         this.workerPool = workerPool;
+        this.port = port;
         this.setupRoutes();
     }
 
     private setupRoutes() {
         this.app.get('/stats', (req, res) => {
-            // This call is now valid because WorkerPool.getStats() is public/exported
             const stats = this.workerPool.getStats(); 
             res.json(stats);
         });
 
-        // ... other routes
+        this.app.get('/ping', (req, res) => {
+            res.status(200).send('Bot API is running.');
+        });
     }
-    
-    // ... start method
+
+    public start(): void {
+        this.app.listen(this.port, () => {
+            logger.info(`API Server listening on port ${this.port}`);
+        });
+    }
 }
