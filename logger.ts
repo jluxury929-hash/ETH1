@@ -1,23 +1,28 @@
 // logger.ts
 
 import * as winston from 'winston';
+// Import the base type needed for the printf function compatibility check
+import { TransformableInfo } from 'logform'; 
 
-// Final, robust interface definition to satisfy TS2345
-interface CustomLogInfo {
+// FINAL FIX TS2345: Define a compatible interface. 
+// timestamp MUST be optional to satisfy the function parameter type (TransformableInfo).
+interface CustomLogInfo extends TransformableInfo {
     level: string;
     message: string;
-    timestamp: string; // Required because winston.format.timestamp is used
+    timestamp?: string; // Made optional to satisfy the compiler's signature check
     stack?: string;
-    [key: string]: any; // Allows for other properties winston adds
 }
 
-const logFormat = winston.format.printf( // FIX TS2552: Corrected typo from 'wininston' to 'winston'
-    // Using the final, robust custom interface
+const logFormat = winston.format.printf(
+    // Using the final, compatible custom interface
     ({ level, message, timestamp, stack }: CustomLogInfo) => { 
+        // We check for timestamp's existence before using it, as it's now optional in the type
+        const time = timestamp ? timestamp : new Date().toISOString(); 
+        
         if (stack) {
-            return `${timestamp} [${level.toUpperCase()}]: ${message}\n${stack}`;
+            return `${time} [${level.toUpperCase()}]: ${message}\n${stack}`;
         }
-        return `${timestamp} [${level.toUpperCase()}]: ${message}`;
+        return `${time} [${level.toUpperCase()}]: ${message}`;
     }
 );
 
