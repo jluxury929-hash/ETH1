@@ -1,28 +1,17 @@
 {
   "compilerOptions": {
-    /* Project Options */
-    "target": "es2020",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "outDir": "./dist",
+    "rootDir": ".", 
+    "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "outDir": "./dist",
-    "rootDir": ".",    /* FIXED: Source root is the current directory */
-
-    /* Type Checking */
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-
-    /* Other */
+    "skipLibCheck": true, 
+    "allowJs": true,
     "sourceMap": false
   },
-  "include": [
-    "**/*.ts"          /* FIXED: Includes all .ts files recursively */
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["**/*.ts"], 
+  "exclude": ["node_modules", "dist"]
 }
