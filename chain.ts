@@ -1,6 +1,6 @@
 // config/chains.ts
 
-// FIX TS2305: Ensures ChainConfig is imported correctly
+// FIX TS2307: Correct path to step up one directory level to find types.js
 import { ChainConfig } from '../types.js'; 
 
 function getEnv(key: string): string {
@@ -14,7 +14,7 @@ function getEnv(key: string): string {
 
 export const CHAINS: ChainConfig[] = [
     {
-        chainId: 1, // Ethereum Mainnet
+        chainId: 1, 
         name: 'Ethereum Mainnet',
         httpUrl: getEnv('ETH_HTTP_RPC_URL'),
         wssUrl: getEnv('ETH_WSS_URL'),
