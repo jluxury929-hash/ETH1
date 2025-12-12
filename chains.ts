@@ -1,7 +1,7 @@
 // chains.ts
 
-// FIX TS2307: Maintains strict path format for NodeNext
-import { ChainConfig } from '../types.js'; 
+// FIX TS2307: Removed .js extension to work with moduleResolution: "node"
+import { ChainConfig } from '../types'; 
 
 function getEnv(key: string): string {
     const value = process.env[key];
