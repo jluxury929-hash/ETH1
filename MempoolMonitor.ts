@@ -1,9 +1,7 @@
 // MempoolMonitor.ts
 
 import { ethers, providers } from 'ethers';
-
-// FIX: Added .js extension
-import { logger } from './logger.js'; 
+import { logger } from './logger.js'; // FIX: Added .js extension
 
 export class MempoolMonitor {
     private provider: providers.WebSocketProvider;
@@ -11,14 +9,13 @@ export class MempoolMonitor {
 
     constructor(wssUrl: string) {
         this.provider = new providers.WebSocketProvider(wssUrl);
-        // Do not set isMonitoring here, set it in start()
-        this.setupListeners();
     }
     
     public start(): void {
         this.isMonitoring = true;
-        this.provider.removeAllListeners(); // Clean slate if restarting
+        this.provider.removeAllListeners(); 
         this.setupListeners();
+        logger.info("[MONITOR] Monitoring started.");
     }
 
     private setupListeners(): void {
@@ -31,17 +28,16 @@ export class MempoolMonitor {
         });
 
         this.provider.on('open', () => {
-            logger.info("[MONITOR] WebSocket connection open and monitoring.");
+            logger.info("[MONITOR] WebSocket connection open.");
         });
     }
 
     public stop(): void {
         this.provider.removeAllListeners();
-        // Use destroy for clean socket termination
         if (typeof (this.provider as any).destroy === 'function') {
             (this.provider as any).destroy(); 
         }
-        this.isMonitoring = false; // Set status on stop
+        this.isMonitoring = false;
         logger.info("[MONITOR] Monitoring stopped.");
     }
 }
