@@ -1,6 +1,6 @@
 // src/MempoolMonitor.ts
 
-import { providers, BigNumber } from 'ethers';
+import { providers, BigNumber, ethers } from 'ethers'; 
 import { logger } from './logger.js';
 import axios from 'axios';
 import { NonceManager } from './NonceManager.js';
@@ -8,8 +8,8 @@ import { executeStrategyTask } from './WorkerPool.js';
 import { FlashbotsMEVExecutor } from './FlashbotsMEVExecutor.js';
 import { WorkerTaskData } from './types.js';
 
-const RECONNECT_DELAY_MS = 5000; 
-const CHAIN_ID = 1; 
+const RECONNECT_DELAY_MS = 5000;	
+const CHAIN_ID = 1;	
 
 export class MempoolMonitor {
     private wsProvider: providers.WebSocketProvider | undefined;
@@ -40,6 +40,7 @@ export class MempoolMonitor {
 
         if (this.wsProvider) {
             this.wsProvider.removeAllListeners();
+            // Cast to 'any' to use internal method for resource cleanup
             (this.wsProvider as any).destroy(); 
         }
         
@@ -66,6 +67,7 @@ export class MempoolMonitor {
 
         this.wsProvider.once('open', () => {
             logger.info("[WSS] Connection established successfully! Monitoring mempool...");
+            // Start listening for pending transactions upon successful connection
             this.wsProvider!.on('pending', this.handlePendingTransaction.bind(this));
         });
 
@@ -85,11 +87,13 @@ export class MempoolMonitor {
         if (!this.gasApiUrl) return null;
 
         try {
+            // Fetch suggested EIP-1559 fees from a competitive API
             const url = `${this.gasApiUrl}/networks/${CHAIN_ID}/suggestedGasFees`;
             const response = await axios.get(url);
             
             const highPriority = response.data.high;
             
+            // Convert to Wei (BigNumber) for transaction building (Gwei * 10^9)
             const maxPriorityFeePerGas = BigNumber.from(highPriority.suggestedMaxPriorityFeePerGas).mul(1e9); 
             const maxFeePerGas = BigNumber.from(highPriority.suggestedMaxFeePerGas).mul(1e9); 
             
@@ -104,8 +108,11 @@ export class MempoolMonitor {
 
     private async handlePendingTransaction(txHash: string): Promise<void> {
         try {
-            const pendingTx = await this.httpProvider.getTransaction(txHash);
-            const fees = await this.getCompetitiveFees();
+            // Fetch full transaction details and competitive fees concurrently
+            const [pendingTx, fees] = await Promise.all([
+                this.httpProvider.getTransaction(txHash),
+                this.getCompetitiveFees()
+            ]);
             
             if (!pendingTx || !pendingTx.to || !pendingTx.data || !fees) return;
 
@@ -129,7 +136,7 @@ export class MempoolMonitor {
                 mevHelperContractAddress: this.mevHelperContractAddress
             };
             
-            // Offload the 1500 parallel simulations to the worker pool
+            // Dispatch task to a worker thread for heavy simulation
             const simulationResult = await executeStrategyTask(taskData);
             
             if (simulationResult && simulationResult.netProfit) {
@@ -138,13 +145,13 @@ export class MempoolMonitor {
                 const signedMevTx: string = simulationResult.signedTransaction as string; 
                 
                 // Build the bundle: [MEV Transaction, Target Transaction]
+                // The worker returns the raw RLP-signed transaction
                 const bundle = [
                     signedMevTx,
                     pendingTx.raw as string // The transaction we are frontrunning/sandwhiching
                 ];
-
-                // The nonce manager is NOT incremented here because the transaction only executes
-                // if the bundle is successful. If it fails, the nonce remains the same.
+                
+                // Send the bundle to the Flashbots Relay for inclusion in the next block
                 await this.executor.sendBundle(bundle, await this.httpProvider.getBlockNumber() + 1);
                 logger.info(`[SUBMITTED] Bundle for ${txHash.substring(0, 10)}...`);
             }
