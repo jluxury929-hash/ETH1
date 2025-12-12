@@ -1,6 +1,6 @@
-// config/chains.ts
+// chains.ts
 
-// FIX TS2834: Re-add .js extension for strict NodeNext module resolution
+// FIX TS2307: Maintains strict path format for NodeNext
 import { ChainConfig } from '../types.js'; 
 
 function getEnv(key: string): string {
