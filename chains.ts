@@ -1,7 +1,7 @@
 // chains.ts
 
-// FIX TS2307: Removed .js extension to work with moduleResolution: "node"
-import { ChainConfig } from '../types'; 
+// FIX TS2834: Re-add the required .js extension
+import { ChainConfig } from '../types.js'; 
 
 function getEnv(key: string): string {
     const value = process.env[key];
