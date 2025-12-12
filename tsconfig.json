@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "node", 
     "target": "ES2022",
     "outDir": "./dist",
     "rootDir": "./",
-    "baseUrl": "./", // FIX: Sets the project root as the base for module resolution
+    "baseUrl": "./", 
     "paths": {
-      "*": ["src/*", "node_modules/*", "*"] // Ensures all modules are found
+      "*": ["src/*", "node_modules/*", "*"] 
     },
     "strict": true,
     "esModuleInterop": true,
