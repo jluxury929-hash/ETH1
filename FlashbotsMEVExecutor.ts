@@ -3,8 +3,11 @@
 import { FlashbotsBundleProvider, FlashbotsBundleResolution } from '@flashbots/ethers-provider-bundle';
 import { providers, Wallet } from 'ethers';
 import { TransactionRequest } from '@ethersproject/abstract-provider'; 
-import { logger } from './logger.js';
-import { ChainConfig } from './config/chains.js'; // FIX: TS2307 - Ensure config/chains.ts exists
+
+// FIX: Added .js extension
+import { logger } from './logger.js'; 
+// FIX: TS2307 - Ensure this path is correct and config/chains.ts exists
+import { ChainConfig } from './config/chains.js'; 
 
 export class FlashbotsMEVExecutor {
     private provider: providers.JsonRpcProvider;
@@ -21,14 +24,20 @@ export class FlashbotsMEVExecutor {
         this.flashbotsProvider = flashbotsProvider;
     }
 
+    /**
+     * Initializes the Flashbots Executor with the necessary signers and providers.
+     */
     static async create(
         walletPrivateKey: string,
         authPrivateKey: string,
         rpcUrl: string,
         flashbotsUrl: string
     ): Promise<FlashbotsMEVExecutor> {
+        // Standard Ethers provider for state reading and transactions
         const provider = new providers.JsonRpcProvider(rpcUrl);
+        // The wallet that signs the actual transactions
         const walletSigner = new Wallet(walletPrivateKey, provider);
+        // The separate wallet used to authenticate with the Flashbots relay
         const authSigner = new Wallet(authPrivateKey);
 
         const flashbotsProvider = await FlashbotsBundleProvider.create(
@@ -37,7 +46,7 @@ export class FlashbotsMEVExecutor {
             flashbotsUrl
         );
 
-        logger.info(`[EVM] Flashbots provider created.`);
+        logger.info(`[EVM] Flashbots provider created and connected to ${flashbotsUrl}.`);
         return new FlashbotsMEVExecutor(provider, walletSigner, flashbotsProvider);
     }
     
@@ -45,6 +54,11 @@ export class FlashbotsMEVExecutor {
         return this.walletSigner.address;
     }
 
+    /**
+     * Sends a signed bundle of transactions to the Flashbots relay.
+     * @param signedTxs Array of raw signed transaction strings.
+     * @param blockNumber The target block number for inclusion.
+     */
     async sendBundle(
         signedTxs: string[], 
         blockNumber: number
@@ -57,7 +71,7 @@ export class FlashbotsMEVExecutor {
                 blockNumber
             );
             
-            // FIX: TS2339 - Correct usage of the wait method 
+            // FIX: TS2339 - The submission object requires .wait() to monitor resolution
             const resolution = await submission.wait(); 
 
             if (resolution === FlashbotsBundleResolution.BundleIncluded) {
@@ -66,7 +80,10 @@ export class FlashbotsMEVExecutor {
                 logger.warn(`[Flashbots FAIL] Bundle was not included.`);
             }
         } catch (error) {
+            // Handle specific relay errors vs. network errors
             logger.error(`[Flashbots] Bundle submission error.`, error);
         }
     }
+    
+    // Add other utility methods here (e.g., getting gas estimations, signing transactions)
 }
