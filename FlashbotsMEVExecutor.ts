@@ -3,10 +3,8 @@
 import { FlashbotsBundleProvider, FlashbotsBundleResolution } from '@flashbots/ethers-provider-bundle';
 import { providers, Wallet } from 'ethers';
 import { TransactionRequest } from '@ethersproject/abstract-provider'; 
-
-// FIX: Added .js extension
-import { logger } from './logger.js'; 
-import { ChainConfig } from './config/chains.js'; 
+import { logger } from './logger.js';
+import { ChainConfig } from './config/chains.js'; // FIX: TS2307 - Ensure config/chains.ts exists
 
 export class FlashbotsMEVExecutor {
     private provider: providers.JsonRpcProvider;
@@ -29,7 +27,6 @@ export class FlashbotsMEVExecutor {
         rpcUrl: string,
         flashbotsUrl: string
     ): Promise<FlashbotsMEVExecutor> {
-        // ... (initialization logic)
         const provider = new providers.JsonRpcProvider(rpcUrl);
         const walletSigner = new Wallet(walletPrivateKey, provider);
         const authSigner = new Wallet(authPrivateKey);
