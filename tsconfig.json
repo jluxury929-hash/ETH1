@@ -4,10 +4,10 @@
     "moduleResolution": "NodeNext", 
     "target": "ES2022",
     "outDir": "./dist",
-    "rootDir": "./",
+    // FINAL FIX: Explicitly set rootDir to the source folder
+    "rootDir": "./src", 
     "baseUrl": "./", 
     "paths": {
-      "./*": ["./src/*"], 
       "*": ["node_modules/*", "*"] 
     },
     "strict": true,
