@@ -5,10 +5,12 @@
     "target": "ES2022",
     "outDir": "./dist",
     "rootDir": "./",
-    "baseUrl": "./src", // FINAL FIX: Set baseUrl to the source directory
+    "baseUrl": "./", // FINAL FIX: Set baseUrl back to project root
     "paths": {
-      // FINAL FIX: Map @app to the root of the source directory
-      "@app/*": ["*"] 
+      // FINAL FIX: Map imports explicitly to 'src/*' from the root
+      "config/*": ["src/config/*"],
+      "types.js": ["src/types.ts"], // Map specific types file if needed
+      "*": ["node_modules/*", "*"] 
     },
     "strict": true,
     "esModuleInterop": true,
