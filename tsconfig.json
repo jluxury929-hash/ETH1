@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "NodeNext",
-    // FIX TS5109: moduleResolution MUST be set to "NodeNext" when module is "NodeNext"
+    // FIX: moduleResolution MUST be "NodeNext" when module is "NodeNext"
     "moduleResolution": "NodeNext", 
     "target": "ES2022",
     "outDir": "./dist",
