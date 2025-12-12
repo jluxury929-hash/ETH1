@@ -1,12 +1,10 @@
 // logger.ts
 
 import * as winston from 'winston';
-// FIX TS2694: Directly import the required Info type for the logging format
-import { Info } from 'logform'; 
 
 const logFormat = winston.format.printf(
-    // Use the directly imported Info type
-    ({ level, message, timestamp, stack }: Info) => { 
+    // FIX TS2305: Using the stable internal type path after removing direct logform import
+    ({ level, message, timestamp, stack }: winston.Logform.Info) => { 
         if (stack) {
             return `${timestamp} [${level.toUpperCase()}]: ${message}\n${stack}`;
         }
