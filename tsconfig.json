@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    /* Project Options */
+    "target": "es2020",                                /* Specify ECMAScript target version */
+    "module": "NodeNext",                              /* Specify module code generation for Node.js ESM */
+    "moduleResolution": "NodeNext",                    /* Resolve modules using Node.js ESM logic */
+    "esModuleInterop": true,                           /* Enables interop between CommonJS and ES Modules */
+    "forceConsistentCasingInFileNames": true,          /* Ensure consistent file casing */
+    "strict": true,                                    /* Enable all strict type-checking options */
+    "skipLibCheck": true,                              /* Skip type checking of declaration files */
+    "outDir": "./dist",                                /* Redirect output structure to this directory */
+    "rootDir": "./src",                                /* Specify the root directory of source files */
+
+    /* Type Checking */
+    "noImplicitAny": true,                             /* Raise error on expressions and declarations with an implied 'any' type */
+    "strictNullChecks": true,                          /* Enable strict null checks */
+
+    /* Other */
+    "sourceMap": false                                 /* Do not emit source map files */
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
