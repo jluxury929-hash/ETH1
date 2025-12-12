@@ -2,9 +2,17 @@
 
 import * as winston from 'winston';
 
+// We must define a minimal LogInfo type ourselves to bypass the stubborn TS2694/TS2305 error
+interface LogInfo {
+    level: string;
+    message: string;
+    timestamp: string;
+    stack?: string;
+}
+
 const logFormat = winston.format.printf(
-    // FIX TS2694: Using the fully qualified and most stable internal type path.
-    ({ level, message, timestamp, stack }: winston.Logform.Info) => { 
+    // FINAL FIX TS2694: Using the custom interface to bypass the stubborn dependency type error
+    ({ level, message, timestamp, stack }: LogInfo) => { 
         if (stack) {
             return `${timestamp} [${level.toUpperCase()}]: ${message}\n${stack}`;
         }
