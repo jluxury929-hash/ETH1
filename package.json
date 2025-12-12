@@ -14,8 +14,8 @@
   "dependencies": {
     "axios": "^1.6.8",
     "dotenv": "^16.4.5",
-    "ethers": "^5.7.2",
-    "@flashbots/ethers-provider-bundle": "^0.6.0",
+    "ethers": "5.7.2", // FIX: Pinned to exact version to resolve type conflicts
+    "@flashbots/ethers-provider-bundle": "0.6.0", // FIX: Pinned to exact version
     "express": "^4.18.3",
     "winston": "^3.11.0"
   },
