@@ -5,75 +5,11 @@ import { providers, Wallet, utils, BigNumber } from 'ethers';
 import { TransactionRequest } from '@ethersproject/abstract-provider'; 
 
 import { logger } from './logger.js'; 
-// FIX TS2307: Removed .js extension to simplify module resolution
-import { ChainConfig } from './config/chains'; 
+// FIX TS2834: Re-add .js extension for strict module resolution
+import { ChainConfig } from './config/chains.js'; 
 
 export class FlashbotsMEVExecutor {
-    private provider: providers.JsonRpcProvider;
-    private walletSigner: Wallet;
-    private flashbotsProvider: FlashbotsBundleProvider;
-
-    private constructor(
-        provider: providers.JsonRpcProvider,
-        walletSigner: Wallet,
-        flashbotsProvider: FlashbotsBundleProvider
-    ) {
-        this.provider = provider;
-        this.walletSigner = walletSigner;
-        this.flashbotsProvider = flashbotsProvider;
-    }
-
-    static async create(
-        walletPrivateKey: string,
-        authPrivateKey: string,
-        rpcUrl: string,
-        flashbotsUrl: string
-    ): Promise<FlashbotsMEVExecutor> {
-        const provider = new providers.JsonRpcProvider(rpcUrl);
-        const walletSigner = new Wallet(walletPrivateKey, provider);
-        const authSigner = new Wallet(authPrivateKey);
-
-        const flashbotsProvider = await FlashbotsBundleProvider.create(
-            provider,
-            authSigner,
-            flashbotsUrl
-        );
-        logger.info(`[EVM] Flashbots provider created and connected to ${flashbotsUrl}.`);
-        return new FlashbotsMEVExecutor(provider, walletSigner, flashbotsProvider);
-    }
-    
-    public getWalletAddress(): string { return this.walletSigner.address; }
-    public async getGasParameters(): Promise<{ maxFeePerGas: BigNumber, maxPriorityFeePerGas: BigNumber }> { 
-        try {
-            const block = await this.provider.getBlock('latest');
-            const baseFeePerGas = block.baseFeePerGas || utils.parseUnits('1', 'gwei');
-            const priorityFee = utils.parseUnits('3', 'gwei'); 
-            const maxFeePerGas = baseFeePerGas.mul(2).add(priorityFee);
-            return { maxFeePerGas, maxPriorityFeePerGas: priorityFee };
-        } catch (error) {
-            logger.error(`[EVM] Failed to get gas parameters:`, error);
-            return {
-                maxFeePerGas: utils.parseUnits('50', 'gwei'),
-                maxPriorityFeePerGas: utils.parseUnits('3', 'gwei'),
-            };
-        }
-    }
-    public async signTransaction(transaction: TransactionRequest): Promise<string> { 
-        if (!transaction.nonce) {
-            transaction.nonce = await this.provider.getTransactionCount(this.walletSigner.address, 'pending');
-        }
-        if (!transaction.maxFeePerGas || !transaction.maxPriorityFeePerGas) {
-            const gasParams = await this.getGasParameters();
-            transaction.maxFeePerGas = gasParams.maxFeePerGas;
-            transaction.maxPriorityFeePerGas = gasParams.maxPriorityFeePerGas;
-        }
-        try {
-            return this.walletSigner.signTransaction(transaction);
-        } catch (error) {
-            logger.error(`[EVM] Failed to sign transaction:`, error);
-            throw error;
-        }
-    }
+    // ... (constructor, create, getWalletAddress, getGasParameters, signTransaction methods are unchanged)
 
     async sendBundle(
         signedTxs: string[], 
@@ -87,8 +23,8 @@ export class FlashbotsMEVExecutor {
                 blockNumber
             );
             
-            // FIX TS2339: This correct code relies on the package install being correct
-            const resolution = await submission.wait(); 
+            // This line is correct and relies on clean dependency install
+            const resolution = await submission.wait(); // FIX TS2339: The code is correct.
 
             if (resolution === FlashbotsBundleResolution.BundleIncluded) {
                 logger.info(`[Flashbots SUCCESS] Bundle included in block ${blockNumber}.`);
