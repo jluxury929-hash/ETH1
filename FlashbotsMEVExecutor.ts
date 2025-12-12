@@ -1,14 +1,16 @@
 // FlashbotsMEVExecutor.ts
+// Corrected import path assumes chains.ts is in the same directory (root)
 
 import { FlashbotsBundleProvider, FlashbotsBundleResolution } from '@flashbots/ethers-provider-bundle';
 import { providers, Wallet, utils, BigNumber } from 'ethers'; 
 import { TransactionRequest } from '@ethersproject/abstract-provider'; 
 
 import { logger } from './logger.js'; 
-// FINAL FIX TS2307: Using the direct relative path from the current file (e.g., src/) to the target file (src/config/)
-import { ChainConfig } from './config/chains.js';
+// FINAL PATH FIX: chains.ts is a peer file, not in a subdirectory
+import { ChainConfig } from './chains.js'; 
 
 export class FlashbotsMEVExecutor {
+    // ... (rest of the class implementation remains the same)
     private provider: providers.JsonRpcProvider;
     private walletSigner: Wallet;
     private flashbotsProvider: FlashbotsBundleProvider;
