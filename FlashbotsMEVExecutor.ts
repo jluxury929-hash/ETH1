@@ -5,11 +5,11 @@ import { providers, Wallet, utils, BigNumber } from 'ethers';
 import { TransactionRequest } from '@ethersproject/abstract-provider'; 
 
 import { logger } from './logger.js'; 
-// FIX TS2307: Maintains strict path format for NodeNext, assuming chains.ts is in ./config
+// Path is strict and requires .js extension
 import { ChainConfig } from './config/chains.js'; 
 
 export class FlashbotsMEVExecutor {
-    // FIX TS2339 (Property missing): Explicitly declare all private properties
+    // Explicitly declared properties (fixes TS2339)
     private provider: providers.JsonRpcProvider;
     private walletSigner: Wallet;
     private flashbotsProvider: FlashbotsBundleProvider;
@@ -24,7 +24,7 @@ export class FlashbotsMEVExecutor {
         this.flashbotsProvider = flashbotsProvider;
     }
 
-    // FIX TS2339 (Static method missing): Ensure 'static' keyword is present
+    // Static method signature (fixes TS2339)
     static async create(
         walletPrivateKey: string,
         authPrivateKey: string,
@@ -44,9 +44,7 @@ export class FlashbotsMEVExecutor {
         return new FlashbotsMEVExecutor(provider, walletSigner, flashbotsProvider);
     }
     
-    public getWalletAddress(): string {
-        return this.walletSigner.address;
-    }
+    public getWalletAddress(): string { return this.walletSigner.address; }
 
     public async getGasParameters(): Promise<{ maxFeePerGas: BigNumber, maxPriorityFeePerGas: BigNumber }> {
         try {
@@ -93,7 +91,7 @@ export class FlashbotsMEVExecutor {
                 blockNumber
             );
             
-            // This code for wait() is correct and relies on clean dependency types
+            // Code is correct; resolution depends on clean type definitions
             const resolution = await submission.wait(); 
 
             if (resolution === FlashbotsBundleResolution.BundleIncluded) {
