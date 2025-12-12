@@ -5,9 +5,8 @@
     "target": "ES2022",
     "outDir": "./dist",
     "rootDir": "./",
-    "baseUrl": "./", // Base set to root
+    "baseUrl": "./", 
     "paths": {
-      // FINAL FIX: Aggressively map the source folder to itself to solve visibility issues
       "./*": ["./src/*"], 
       "*": ["node_modules/*", "*"] 
     },
