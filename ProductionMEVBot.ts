@@ -3,11 +3,11 @@
 import { ethers, providers } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 
-// FIX: Added .js extension to satisfy TS2835 (strict module resolution)
+// FIX: TS2305 (Strategy export) and TS2835 (.js extension)
 import { logger } from './logger.js';
-import { Strategy } from './types.js';
+import { Strategy } from './types.js'; 
 import { FlashbotsMEVExecutor } from './FlashbotsMEVExecutor.js';
-import { MempoolMonitor } from './MempoolMonitor.js';
+import { MempoolMonitor } from './MempoolMonitor.js'; 
 
 export class ProductionMEVBot {
     private monitor: MempoolMonitor;
@@ -49,27 +49,19 @@ export class ProductionMEVBot {
 
     public start(): void {
         logger.info("Starting MEV Bot...");
-        // This is where you would typically start transaction monitoring and bidding logic
-        this.monitor.start(); // Assuming MempoolMonitor has a start method
+        // This method name resolves the TS2339 error in index.ts
+        this.monitor.start(); 
 
-        // Example Logic (Illustrative, replaces old error lines)
+        // Start main strategy loop
         this.runStrategyLoop();
     }
 
     private async runStrategyLoop(): Promise<void> {
-        // Logic related to transaction processing and bidding
-        // This is where the old errors (TS2554, TS2339) were occurring.
-
-        // TS2554 Fix: Ensure function calls have the correct number of arguments.
-        // Assuming your strategy involves sending a transaction:
-        // const rawTx = this.buildTransaction(txData, gasPrice, nonce); // Example of fixed call
-
-        // TS2339 Fix: Ensure property exists before checking (see MempoolMonitor fix below)
+        // Placeholder for the main logic. 
         if (this.monitor.isMonitoring) { 
-            logger.debug("Mempool monitor is active.");
+            logger.debug("Mempool monitor is active. Ready to process transactions.");
         }
-        
-        // Safety checks and main loop...
+        // ...
     }
 
     public stop(): void {
