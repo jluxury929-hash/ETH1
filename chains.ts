@@ -1,7 +1,7 @@
 // chains.ts
 
-// Path is strict and requires .js extension
-import { ChainConfig } from '../types.js'; 
+// FINAL FIX TS2307: Using the new absolute path mapping
+import { ChainConfig } from '@app/types.js'; 
 
 function getEnv(key: string): string {
     const value = process.env[key];
