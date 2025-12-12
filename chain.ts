@@ -1,7 +1,7 @@
 // config/chains.ts
 
-// FIX TS2307: Correct path to step up one directory level to find types.js
-import { ChainConfig } from '../types.js'; 
+// FIX TS2307: Removed .js extension to simplify module resolution
+import { ChainConfig } from '../types'; 
 
 function getEnv(key: string): string {
     const value = process.env[key];
