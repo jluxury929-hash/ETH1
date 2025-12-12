@@ -1,8 +1,9 @@
 // chains.ts
-// Corrected import path assumes types.ts is in the same directory (root)
+// Assumed location: /app/chains.ts
 
-// FINAL PATH FIX: types.ts is a peer file, not in a parent directory
-import { ChainConfig } from './types.js'; 
+// FINAL FIX TS2459: Change import to export the ChainConfig type/interface 
+// so it is visible to FlashbotsMEVExecutor.ts
+export { ChainConfig } from './types.js'; 
 
 function getEnv(key: string): string {
     const value = process.env[key];
