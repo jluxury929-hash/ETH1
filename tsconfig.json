@@ -5,11 +5,10 @@
     "target": "ES2022",
     "outDir": "./dist",
     "rootDir": "./",
-    "baseUrl": "./", 
+    "baseUrl": "./src", // FINAL FIX: Set baseUrl to the source directory
     "paths": {
-      // FINAL FIX TS2307: Explicitly map the source folder for better inter-module visibility
-      "@app/*": ["./src/*"], 
-      "*": ["node_modules/*", "*"] 
+      // FINAL FIX: Map @app to the root of the source directory
+      "@app/*": ["*"] 
     },
     "strict": true,
     "esModuleInterop": true,
