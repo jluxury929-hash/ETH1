@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
     "module": "NodeNext",
-    // FIX TS5109: Must be NodeNext when 'module' is NodeNext
     "moduleResolution": "NodeNext", 
     "target": "ES2022",
     "outDir": "./dist",
     "rootDir": "./",
     "baseUrl": "./", 
     "paths": {
-      "*": ["src/*", "node_modules/*", "*"] 
+      // FINAL FIX TS2307: Explicitly map the source folder for better inter-module visibility
+      "@app/*": ["./src/*"], 
+      "*": ["node_modules/*", "*"] 
     },
     "strict": true,
     "esModuleInterop": true,
