@@ -1,102 +1,36 @@
-// src/WorkerPool.ts
+// WorkerPool.ts
 
-import { Worker, isMainThread } from 'node:worker_threads';
-import * as os from 'os';
-import * as path from 'path';
-import { logger } from './logger.js';
-import { WorkerTaskData, WorkerResult, WorkerTaskWrapper, WorkerStats, TaskResolver } from './types.js';
+// ... (inside the private handleWorkerMessage method)
 
-const NUM_WORKERS = Math.max(2, os.cpus().length - 1); 
-
-class WorkerPool {
-    private workers: Worker[] = [];
-    private freeWorkers: Worker[] = [];
-    private taskQueue: WorkerTaskWrapper[] = [];
-    private nextTaskId: number = 0;
-    private activeTaskMap: Map<number, TaskResolver> = new Map();
-
-    constructor() {
-        logger.info(`[POOL] Initializing Worker Pool with ${NUM_WORKERS} threads...`);
-        for (let i = 0; i < NUM_WORKERS; i++) {
-            this.createWorker(i);
+// Line 34: FIX TS2345 - Check if WorkerResult is null before passing to resolver
+        const task = this.tasks.get(data.id);
+        if (task && data.result) { // Check if data.result is not null
+            task.resolver(data.result); // Pass only the non-null result
+            this.tasks.delete(data.id);
+        } else if (task && !data.result) {
+            // Handle error case where worker failed and returned null/undefined result
+            task.resolver({ success: false, message: "Worker failed to return a result." });
+            this.tasks.delete(data.id);
         }
-    }
 
-    private createWorker(id: number): void {
-        const workerPath = path.resolve(process.cwd(), 'dist/ExecutionWorker.js'); 
-        const worker = new Worker(workerPath, {
-            workerData: { id: id },
-        });
+// ... (inside the public addTask method)
 
-        worker.on('message', (message: { result: WorkerResult | null, taskId: number }) => {
-            const resolver = this.activeTaskMap.get(message.taskId);
-            if (resolver) {
-                resolver(message.result);
-                this.activeTaskMap.delete(message.taskId);
-            }
-            
-            this.freeWorkers.push(worker);
-            this.processQueue();
-        });
+// Line 66: FIX TS2551 - The property is 'resolver', not 'resolve'
+    // ...
+    const wrapper: WorkerTaskWrapper = {
+        id: taskId,
+        data: taskData,
+        resolver: resolve, // Corrected property name
+        task: 'MEV_BUNDLE_EXECUTION' // FIX: TS2339/TS2353 - Added the 'task' property
+    };
 
-        worker.on('error', (err) => {
-            logger.error(`[WORKER:${id}] Thread Error:`, err);
-        });
+// ... (inside the private logStats method)
 
-        worker.on('exit', (code) => {
-            if (code !== 0) {
-                logger.error(`[WORKER:${id}] Worker stopped with exit code ${code}. Replacing...`);
-            }
-            this.workers = this.workers.filter(w => w !== worker);
-            this.freeWorkers = this.freeWorkers.filter(w => w !== worker);
-            this.createWorker(id); 
-        });
+// Line 75: FIX TS2353 - Ensure 'totalWorkers' is added to the log object
+    // ...
+    const stats: WorkerStats = {
+        // ... other properties
+        totalWorkers: this.workers.length // FIX: Added the missing property
+    };
 
-        this.workers.push(worker);
-        this.freeWorkers.push(worker);
-    }
-
-    private processQueue(): void {
-        while (this.taskQueue.length > 0 && this.freeWorkers.length > 0) {
-            const worker = this.freeWorkers.pop();
-            const taskWrapper = this.taskQueue.shift();
-
-            if (worker && taskWrapper) {
-                const taskId = this.nextTaskId++;
-                this.activeTaskMap.set(taskId, taskWrapper.resolve);
-                
-                worker.postMessage({ type: 'task', data: taskWrapper.task, taskId });
-            }
-        }
-    }
-
-    public getStats(): WorkerStats {
-        return {
-            totalWorkers: this.workers.length,
-            busyWorkers: this.workers.length - this.freeWorkers.length,
-            idleWorkers: this.freeWorkers.length,
-            pendingTasks: this.taskQueue.length,
-            activeTasks: this.activeTaskMap.size,
-        };
-    }
-
-    public executeTask(task: WorkerTaskData): Promise<WorkerResult | null> {
-        return new Promise((resolve) => {
-            const taskWrapper: WorkerTaskWrapper = { task, resolve };
-            this.taskQueue.push(taskWrapper);
-            this.processQueue();
-        });
-    }
-}
-
-const pool = isMainThread ? new WorkerPool() : undefined;
-
-export function executeStrategyTask(task: WorkerTaskData): Promise<WorkerResult | null> {
-    if (!pool) throw new Error("WorkerPool not initialized in Main Thread.");
-    return pool.executeTask(task);
-}
-
-export function getStats(): WorkerStats {
-    if (!pool) throw new Error("WorkerPool not initialized in Main Thread.");
-    return pool.getStats();
-}
+// ...
