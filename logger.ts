@@ -1,10 +1,9 @@
 // logger.ts
 
 import * as winston from 'winston';
-// Remove 'import { Info } from 'logform';'
 
 const logFormat = winston.format.printf(
-    // FIX TS2305: Using the stable internal type path that works with all versions
+    // FIX TS2694: Using the fully qualified and most stable internal type path.
     ({ level, message, timestamp, stack }: winston.Logform.Info) => { 
         if (stack) {
             return `${timestamp} [${level.toUpperCase()}]: ${message}\n${stack}`;
