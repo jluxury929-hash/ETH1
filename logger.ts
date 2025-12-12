@@ -2,17 +2,19 @@
 
 import * as winston from 'winston';
 
-// We must define a minimal LogInfo type ourselves to bypass the stubborn TS2694/TS2305 error
-interface LogInfo {
+// FIX TS2345: Define a robust interface that matches the expected output of winston.format.combine
+// The compiler requires level, message, and timestamp to be present after timestamp() is called.
+interface CustomLogInfo {
     level: string;
     message: string;
-    timestamp: string;
+    timestamp: string; // Required because winston.format.timestamp is used
     stack?: string;
+    [key: string]: any; // Allows for other properties winston adds
 }
 
-const logFormat = winston.format.printf(
-    // FINAL FIX TS2694: Using the custom interface to bypass the stubborn dependency type error
-    ({ level, message, timestamp, stack }: LogInfo) => { 
+const logFormat = wininston.format.printf(
+    // Using the final, robust custom interface
+    ({ level, message, timestamp, stack }: CustomLogInfo) => { 
         if (stack) {
             return `${timestamp} [${level.toUpperCase()}]: ${message}\n${stack}`;
         }
