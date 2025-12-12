@@ -2,8 +2,7 @@
 
 import * as winston from 'winston';
 
-// FIX TS2345: Define a robust interface that matches the expected output of winston.format.combine
-// The compiler requires level, message, and timestamp to be present after timestamp() is called.
+// Final, robust interface definition to satisfy TS2345
 interface CustomLogInfo {
     level: string;
     message: string;
@@ -12,7 +11,7 @@ interface CustomLogInfo {
     [key: string]: any; // Allows for other properties winston adds
 }
 
-const logFormat = wininston.format.printf(
+const logFormat = winston.format.printf( // FIX TS2552: Corrected typo from 'wininston' to 'winston'
     // Using the final, robust custom interface
     ({ level, message, timestamp, stack }: CustomLogInfo) => { 
         if (stack) {
