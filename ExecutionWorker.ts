@@ -6,7 +6,7 @@ import {
     BigNumber, 
     Wallet 
 } from 'ethers';	
-import { EVM_STRATEGY_POOL } from './evmStrategies.js'; // Corrected Import
+import { EVM_STRATEGY_POOL } from './evmStrategies.js'; 
 import { logger } from './logger.js';
 import * as dotenv from 'dotenv';
 import { WorkerTaskData } from './types.js';
@@ -15,7 +15,7 @@ dotenv.config();
 
 const privateKey = process.env.WALLET_PRIVATE_KEY;
 if (!privateKey) {
-    logger.fatal("[WORKER] WALLET_PRIVATE_KEY is missing. Worker cannot sign transactions.");
+    logger.error("[WORKER] WALLET_PRIVATE_KEY is missing. Worker cannot sign transactions."); // FIXED: Changed fatal to error
     process.exit(1);
 }
 
@@ -74,7 +74,6 @@ parentPort!.on('message', async (message: { type: string, data: WorkerTaskData, 
                     data: strategy.targetContract, 
                     gasLimit: ARBITRAGE_GAS_LIMIT,
                     value: 0, 
-                    // Nonce is taken from the pending transaction, assuming the bot's tx will be second in the bundle
                     nonce: pendingTx.nonce, 
                     type: 2, 
                     maxFeePerGas: BigNumber.from(fees.maxFeePerGas),
@@ -95,6 +94,5 @@ parentPort!.on('message', async (message: { type: string, data: WorkerTaskData, 
 		logger.error(`[WORKER CRASH] Error processing tx ${txHash}`, error); 
 	}
 
-	// Send the BEST result back to the main thread, along with the task ID
 	parentPort!.postMessage({ result: winningStrategyResult, taskId });
 });
