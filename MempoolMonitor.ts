@@ -1,21 +1,28 @@
-// src/MempoolMonitor.ts
-import { ethers, providers } from 'ethers';
-import { logger } from './logger.js'; // FIX: .js extension
+// MempoolMonitor.ts
 
-// NOTE: This class is often integrated directly into ProductionMEVBot (as we did previously),
-// but here is the corrected file if it is used separately.
+import { ethers, providers } from 'ethers';
+
+// FIX: Added .js extension
+import { logger } from './logger.js'; 
 
 export class MempoolMonitor {
     private provider: providers.WebSocketProvider;
+    public isMonitoring: boolean = false; // FIX: Added property for TS2339
 
     constructor(wssUrl: string) {
         this.provider = new providers.WebSocketProvider(wssUrl);
+        // Do not set isMonitoring here, set it in start()
+        this.setupListeners();
+    }
+    
+    public start(): void {
+        this.isMonitoring = true;
+        this.provider.removeAllListeners(); // Clean slate if restarting
         this.setupListeners();
     }
 
     private setupListeners(): void {
         this.provider.on('pending', (txHash: string) => {
-            // In a real application, this would pipe the hash to the worker pool manager
             logger.debug(`[MONITOR] Received pending transaction hash: ${txHash.substring(0, 10)}...`);
         });
 
@@ -34,6 +41,7 @@ export class MempoolMonitor {
         if (typeof (this.provider as any).destroy === 'function') {
             (this.provider as any).destroy(); 
         }
+        this.isMonitoring = false; // Set status on stop
         logger.info("[MONITOR] Monitoring stopped.");
     }
 }
