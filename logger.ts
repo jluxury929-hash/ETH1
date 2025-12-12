@@ -1,20 +1,27 @@
-// src/logger.ts
-import * as winston from 'winston';
+// logger.ts
 
-const { combine, timestamp, printf, colorize } = winston.format;
+import * as winston from 'winston'; // FIX TS2307: Requires winston to be installed
 
-const logFormat = printf(({ level, message, timestamp, stack }) => {
-  return `${timestamp} [${level}]: ${message}${stack ? `\n${stack}` : ''}`;
-});
+const logFormat = winston.format.printf(
+    // FIX TS7031: Explicitly type arguments to prevent implicit 'any' error
+    ({ level, message, timestamp, stack }: winston.Logform.Info) => { 
+        // Handles stack trace for error logs
+        if (stack) {
+            return `${timestamp} [${level.toUpperCase()}]: ${message}\n${stack}`;
+        }
+        return `${timestamp} [${level.toUpperCase()}]: ${message}`;
+    }
+);
 
 export const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info', 
-  format: combine(
-    colorize({ all: true }),
-    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    logFormat
-  ),
-  transports: [
-    new winston.transports.Console(),
-  ],
+    level: process.env.LOG_LEVEL || 'info',
+    format: winston.format.combine(
+        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        winston.format.errors({ stack: true }),
+        winston.format.colorize(),
+        logFormat
+    ),
+    transports: [
+        new winston.transports.Console()
+    ]
 });
