@@ -1,36 +1,32 @@
-// src/index.ts
+// index.ts
 
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { ProductionMEVBot } from './ProductionMEVBot.js'; // FIX: Added .js
+// import { logger } from './logger.js'; // Assuming logger is available globally or imported elsewhere
 
-import { logger } from './logger.js'; 
-import { ProductionMEVBot } from './ProductionMEVBot.js'; 
-import { startAPIServer } from './APIServer.js'; 
-
-// --- Main Application Entry Point ---
-async function main() {
-	logger.info(`[STEP 1] Initializing Node.js MEV Trading Engine...`);
-	
-    startAPIServer(); 
-    
-	logger.info(`[STEP 2] Initializing and Starting MEV Bot...`);
-	
-	try {
-		const bot = new ProductionMEVBot();
-		await bot.startMonitoring();
-	} catch (error) {
-		logger.error("FATAL: Unhandled exception during bot startup.", error); // FIXED: Changed fatal to error
-		process.exit(1);
-	}
+// Helper function to safely get environment variables
+function getEnv(key: string): string {
+    const value = process.env[key];
+    if (!value) {
+        throw new Error(`Environment variable ${key} is not set.`);
+    }
+    return value;
 }
 
-main().catch((error) => {
-	logger.error("FATAL: Main application crash.", error); // FIXED: Changed fatal to error
-	process.exit(1);
-});
+async function main() {
+    // FIX: TS2554 - ProductionMEVBot.create() expects 5 arguments, supplied via environment variables
+    const bot = await ProductionMEVBot.create(
+        getEnv('EVM_WALLET_PRIVATE_KEY'),
+        getEnv('EVM_AUTH_PRIVATE_KEY'),
+        getEnv('ETH_HTTP_RPC_URL'),
+        getEnv('ETH_WSS_URL'),
+        getEnv('FLASHBOTS_URL')
+    );
 
-// Graceful shutdown handling
-process.on('SIGINT', () => {
-	logger.warn("SIGINT received. Initiating graceful shutdown...");
-	process.exit(0);
+    // FIX: TS2339 - The method is 'start()' not 'startMonitoring'
+    bot.start(); 
+}
+
+main().catch(error => {
+    console.error("Critical error in main application:", error);
+    process.exit(1);
 });
