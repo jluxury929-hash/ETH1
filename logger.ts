@@ -1,16 +1,30 @@
-// logger.ts (Cleaned and simplified for node resolution)
+// logger.ts
 
 import * as winston from 'winston';
-// Remove the complex imports and interfaces
-// The compiler should now default to a compatible type since module resolution is node.
+import { TransformableInfo } from 'logform'; 
+
+// FINAL, COMPATIBLE INTERFACE
+// This is the least restrictive interface that still maintains type safety for the compiler.
+interface CustomLogInfo extends TransformableInfo {
+    // These properties are required for the printf function to work, 
+    // but made optional here to satisfy the compiler's strict check against TransformableInfo.
+    level?: string;
+    message?: any; 
+    timestamp?: string; 
+    stack?: string;
+}
 
 const logFormat = winston.format.printf(
-    // Reverting to the most stable, canonical type path.
-    ({ level, message, timestamp, stack }: winston.Logform.Info) => { 
+    ({ level, message, timestamp, stack }: CustomLogInfo) => { 
+        // We use nullish coalescing to safely access the fields.
+        const msg = String(message ?? '');
+        const lvl = level ?? 'info';
+        const time = timestamp ?? new Date().toISOString(); 
+        
         if (stack) {
-            return `${timestamp} [${level.toUpperCase()}]: ${message}\n${stack}`;
+            return `${time} [${lvl.toUpperCase()}]: ${msg}\n${stack}`;
         }
-        return `${timestamp} [${level.toUpperCase()}]: ${message}`;
+        return `${time} [${lvl.toUpperCase()}]: ${msg}`;
     }
 );
 
