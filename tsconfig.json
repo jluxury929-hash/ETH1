@@ -4,7 +4,11 @@
     "moduleResolution": "NodeNext",
     "target": "ES2022",
     "outDir": "./dist",
-    "rootDir": ".", 
+    "rootDir": "./",
+    "baseUrl": "./", // FIX: Sets the project root as the base for module resolution
+    "paths": {
+      "*": ["src/*", "node_modules/*", "*"] // Ensures all modules are found
+    },
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
