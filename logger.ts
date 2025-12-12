@@ -1,12 +1,11 @@
 // logger.ts
 
 import * as winston from 'winston';
-// FINAL FIX TS2305: Directly import the required Info type to bypass the Namespace error
-import { Info } from 'logform'; 
+// Remove 'import { Info } from 'logform';'
 
 const logFormat = winston.format.printf(
-    // Use the directly imported Info type
-    ({ level, message, timestamp, stack }: Info) => { 
+    // FIX TS2305: Using the stable internal type path that works with all versions
+    ({ level, message, timestamp, stack }: winston.Logform.Info) => { 
         if (stack) {
             return `${timestamp} [${level.toUpperCase()}]: ${message}\n${stack}`;
         }
