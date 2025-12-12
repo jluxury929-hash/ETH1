@@ -6,7 +6,8 @@
   "type": "module", 
   "scripts": {
     "clean": "rm -rf dist",
-    "prebuild": "npm run clean",
+    // FIX: Add command to remove package-lock.json to force a fresh npm install by Railpack
+    "prebuild": "rm -f package-lock.json && npm run clean", 
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts"
