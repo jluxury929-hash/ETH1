@@ -1,6 +1,6 @@
 // chains.ts
 
-// FIX TS2834: Re-add the required .js extension
+// Path is strict and requires .js extension
 import { ChainConfig } from '../types.js'; 
 
 function getEnv(key: string): string {
