@@ -10,7 +10,7 @@ import {
     TaskResolver 
 } from './types.js';
 
-export class WorkerPool {
+export class WorkerPool { // Class must be exported for APIServer.ts to use it
     private workers: Worker[] = [];
     private tasks: Map<number, WorkerTaskWrapper> = new Map();
     private nextTaskId: number = 0;
@@ -28,50 +28,43 @@ export class WorkerPool {
     }
 
     private handleWorkerMessage(data: { id: number, result: WorkerResult | null }): void {
-        // FIX TS2532, TS2304, TS2345: Data is now correctly destructured and checked
         const task = this.tasks.get(data.id);
         
-        // Check if task exists and if result is not null
         if (task && data.result) { 
             task.resolver(data.result); 
         } else if (task && !data.result) {
-            // Worker returned a null result, treat as failure
             task.resolver({ success: false, message: "Worker failed to return a result." });
         }
         
         if (task) {
             this.tasks.delete(data.id);
-            // Worker is now free to receive new tasks
         }
-        // else: Log an error for a message from an unknown task ID
     }
 
+    // FIX TS2305: getStats MUST be public for APIServer.ts to access it
     public getStats(): WorkerStats {
-        // FIX TS2353: Now includes all required WorkerStats properties
         return {
-            workerId: 0, // Placeholder
-            tasksProcessed: 0, // Placeholder
-            uptimeSeconds: 0, // Placeholder
-            totalWorkers: this.workers.length // Correctly set
+            workerId: 0,
+            tasksProcessed: 0, 
+            uptimeSeconds: 0, 
+            totalWorkers: this.workers.length
         };
     }
 
     public addTask(taskData: WorkerTaskData): Promise<WorkerResult> {
         return new Promise((resolve) => {
-            // FIX TS2552, TS2304, TS2353: Variables are correctly defined and scoped
             const taskId = this.nextTaskId++; 
-            const task: string = 'MEV_BUNDLE_EXECUTION'; // Fixed string for 'task' property
+            const task: string = 'MEV_BUNDLE_EXECUTION'; 
 
             const wrapper: WorkerTaskWrapper = {
                 id: taskId,
                 data: taskData,
-                resolver: resolve as TaskResolver, // FIX TS2551: Property is named 'resolver'
-                task: task // Correctly assign the 'task' property
+                resolver: resolve as TaskResolver, 
+                task: task 
             };
 
             this.tasks.set(taskId, wrapper);
             
-            // Simple load balancing: send task to the next available worker
             const workerIndex = taskId % this.maxWorkers;
             this.workers[workerIndex].postMessage(wrapper);
         });
