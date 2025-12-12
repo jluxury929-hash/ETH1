@@ -1,28 +1,30 @@
 // logger.ts
 
 import * as winston from 'winston';
-// Import the base type needed for the printf function compatibility check
 import { TransformableInfo } from 'logform'; 
 
-// FINAL FIX TS2345: Define a compatible interface. 
-// timestamp MUST be optional to satisfy the function parameter type (TransformableInfo).
+// FINAL FIX TS2345: Define the interface to be compatible with TransformableInfo.
+// We make 'message' accept 'any' or 'unknown' to satisfy the base type check.
 interface CustomLogInfo extends TransformableInfo {
-    level: string;
-    message: string;
-    timestamp?: string; // Made optional to satisfy the compiler's signature check
+    // The base type TransformableInfo defines level/message, but often with loose types (unknown/any).
+    // We make them optional to allow the base type to be assigned, and we'll cast inside printf.
+    level?: string;
+    message?: any; // FIX: Use 'any' or 'unknown' to satisfy the base type, which uses unknown/any
+    timestamp?: string; 
     stack?: string;
 }
 
 const logFormat = winston.format.printf(
-    // Using the final, compatible custom interface
     ({ level, message, timestamp, stack }: CustomLogInfo) => { 
-        // We check for timestamp's existence before using it, as it's now optional in the type
-        const time = timestamp ? timestamp : new Date().toISOString(); 
+        // Cast to string inside the function and use nullish coalescing for safety
+        const msg = String(message ?? '');
+        const lvl = level ?? 'info';
+        const time = timestamp ?? new Date().toISOString(); 
         
         if (stack) {
-            return `${time} [${level.toUpperCase()}]: ${message}\n${stack}`;
+            return `${time} [${lvl.toUpperCase()}]: ${msg}\n${stack}`;
         }
-        return `${time} [${level.toUpperCase()}]: ${message}`;
+        return `${time} [${lvl.toUpperCase()}]: ${msg}`;
     }
 );
 
