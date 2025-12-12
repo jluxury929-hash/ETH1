@@ -16,7 +16,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    // FIX: Using version 0.12.0, which is universally available and stable with Ethers v5
     "@flashbots/ethers-provider-bundle": "0.12.0", 
     "ethers": "^5.7.2",
     "express": "^4.18.2"
