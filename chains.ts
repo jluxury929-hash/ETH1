@@ -1,9 +1,11 @@
 // chains.ts
 // Assumed location: /app/chains.ts
 
-// FINAL FIX TS2459: Change import to export the ChainConfig type/interface 
-// so it is visible to FlashbotsMEVExecutor.ts
-export { ChainConfig } from './types.js'; 
+// FINAL FIX TS2304: Use 'import' to make ChainConfig available locally.
+import { ChainConfig } from './types.js'; 
+
+// FINAL FIX TS2459: Use a separate 'export' to make ChainConfig available to other modules (like FlashbotsMEVExecutor.ts).
+export { ChainConfig } from './types.js'; // This satisfies the other module's import
 
 function getEnv(key: string): string {
     const value = process.env[key];
@@ -14,7 +16,7 @@ function getEnv(key: string): string {
     return value;
 }
 
-export const CHAINS: ChainConfig[] = [
+export const CHAINS: ChainConfig[] = [ // This line now works
     {
         chainId: 1, 
         name: 'Ethereum Mainnet',
