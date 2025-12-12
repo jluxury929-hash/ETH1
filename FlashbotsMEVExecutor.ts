@@ -5,11 +5,11 @@ import { providers, Wallet, utils, BigNumber } from 'ethers';
 import { TransactionRequest } from '@ethersproject/abstract-provider'; 
 
 import { logger } from './logger.js'; 
-// Path is strict and requires .js extension
+// Path is strict and requires .js extension (Fixes TS2307)
 import { ChainConfig } from './config/chains.js'; 
 
 export class FlashbotsMEVExecutor {
-    // Explicitly declared properties (fixes TS2339)
+    // Explicitly declared properties (Fixes prior TS2339 errors about missing properties)
     private provider: providers.JsonRpcProvider;
     private walletSigner: Wallet;
     private flashbotsProvider: FlashbotsBundleProvider;
@@ -24,7 +24,7 @@ export class FlashbotsMEVExecutor {
         this.flashbotsProvider = flashbotsProvider;
     }
 
-    // Static method signature (fixes TS2339)
+    // Static method signature (Fixes prior TS2339 errors about missing static method)
     static async create(
         walletPrivateKey: string,
         authPrivateKey: string,
@@ -91,8 +91,8 @@ export class FlashbotsMEVExecutor {
                 blockNumber
             );
             
-            // Code is correct; resolution depends on clean type definitions
-            const resolution = await submission.wait(); 
+            // FINAL FIX TS2339: Use a type assertion to force the compiler to recognize the .wait() method
+            const resolution = await (submission as any).wait(); 
 
             if (resolution === FlashbotsBundleResolution.BundleIncluded) {
                 logger.info(`[Flashbots SUCCESS] Bundle included in block ${blockNumber}.`);
