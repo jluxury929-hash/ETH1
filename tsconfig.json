@@ -19,9 +19,10 @@
     "sourceMap": false                                 /* Do not emit source map files */
   },
   "include": [
-    "src/**/*"
+    "**/*.ts"                                          /* NEW: Includes all .ts files recursively */
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",                                    /* MUST exclude node_modules to prevent compiling dependencies */
+    "dist"                                             /* MUST exclude the output directory */
   ]
 }
