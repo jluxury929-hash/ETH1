@@ -1,12 +1,11 @@
 // FlashbotsMEVExecutor.ts
 
 import { FlashbotsBundleProvider, FlashbotsBundleResolution } from '@flashbots/ethers-provider-bundle';
-// FIX TS2694: Import BigNumber directly from 'ethers'
 import { providers, Wallet, utils, BigNumber } from 'ethers'; 
 import { TransactionRequest } from '@ethersproject/abstract-provider'; 
 
 import { logger } from './logger.js'; 
-// FIX TS2307: Correct path for module resolution (assuming config folder is sibling)
+// Path fix relies on 'baseUrl' in tsconfig.json
 import { ChainConfig } from './config/chains.js'; 
 
 export class FlashbotsMEVExecutor {
@@ -24,10 +23,6 @@ export class FlashbotsMEVExecutor {
         this.flashbotsProvider = flashbotsProvider;
     }
 
-    /**
-     * Initializes the Flashbots Executor with the necessary signers and providers.
-     * FIX TS1003: Ensures syntax is clean around this definition (lines 24-27).
-     */
     static async create(
         walletPrivateKey: string,
         authPrivateKey: string,
@@ -43,65 +38,37 @@ export class FlashbotsMEVExecutor {
             authSigner,
             flashbotsUrl
         );
-
         logger.info(`[EVM] Flashbots provider created and connected to ${flashbotsUrl}.`);
         return new FlashbotsMEVExecutor(provider, walletSigner, flashbotsProvider);
     }
     
-    public getWalletAddress(): string {
-        return this.walletSigner.address;
-    }
-
-    /**
-     * Estimates gas parameters required for an EIP-1559 transaction.
-     */
-    public async getGasParameters(): Promise<{ maxFeePerGas: BigNumber, maxPriorityFeePerGas: BigNumber }> {
+    public getWalletAddress(): string { /* ... */ return this.walletSigner.address; }
+    public async getGasParameters(): Promise<{ maxFeePerGas: BigNumber, maxPriorityFeePerGas: BigNumber }> { /* ... */ 
         try {
             const block = await this.provider.getBlock('latest');
             const baseFeePerGas = block.baseFeePerGas || utils.parseUnits('1', 'gwei');
-            
             const priorityFee = utils.parseUnits('3', 'gwei'); 
-            
             const maxFeePerGas = baseFeePerGas.mul(2).add(priorityFee);
-            
-            return {
-                maxFeePerGas,
-                maxPriorityFeePerGas: priorityFee,
-            };
+            return { maxFeePerGas, maxPriorityFeePerGas: priorityFee };
         } catch (error) {
-            logger.error(`[EVM] Failed to get gas parameters:`, error);
             return {
                 maxFeePerGas: utils.parseUnits('50', 'gwei'),
                 maxPriorityFeePerGas: utils.parseUnits('3', 'gwei'),
             };
         }
     }
-
-    /**
-     * Signs a transaction request using the wallet signer.
-     */
-    public async signTransaction(transaction: TransactionRequest): Promise<string> {
+    public async signTransaction(transaction: TransactionRequest): Promise<string> { /* ... */ 
         if (!transaction.nonce) {
             transaction.nonce = await this.provider.getTransactionCount(this.walletSigner.address, 'pending');
         }
-        
         if (!transaction.maxFeePerGas || !transaction.maxPriorityFeePerGas) {
             const gasParams = await this.getGasParameters();
             transaction.maxFeePerGas = gasParams.maxFeePerGas;
             transaction.maxPriorityFeePerGas = gasParams.maxPriorityFeePerGas;
         }
-
-        try {
-            return this.walletSigner.signTransaction(transaction);
-        } catch (error) {
-            logger.error(`[EVM] Failed to sign transaction:`, error);
-            throw error;
-        }
+        return this.walletSigner.signTransaction(transaction);
     }
 
-    /**
-     * Sends a signed bundle of transactions to the Flashbots relay.
-     */
     async sendBundle(
         signedTxs: string[], 
         blockNumber: number
@@ -114,7 +81,7 @@ export class FlashbotsMEVExecutor {
                 blockNumber
             );
             
-            // FIX TS2339: The submission object requires .wait()
+            // FIX TS2339: This correct code relies on the package.json version fix
             const resolution = await submission.wait(); 
 
             if (resolution === FlashbotsBundleResolution.BundleIncluded) {
