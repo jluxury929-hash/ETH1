@@ -1,7 +1,7 @@
 // chains.ts
 
-// FINAL FIX TS2307: Using the new absolute path mapping
-import { ChainConfig } from '@app/types.js'; 
+// FINAL FIX TS2307: Path is relative to the new baseUrl (./src)
+import { ChainConfig } from 'types.js'; 
 
 function getEnv(key: string): string {
     const value = process.env[key];
