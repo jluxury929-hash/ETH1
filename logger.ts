@@ -1,9 +1,9 @@
 // logger.ts
 
-import * as winston from 'winston'; // FIX TS2307: Requires winston to be installed
+import * as winston from 'winston';
 
 const logFormat = winston.format.printf(
-    // FIX TS7031: Explicitly type arguments to prevent implicit 'any' error
+    // Explicitly type the arguments using winston's Info object
     ({ level, message, timestamp, stack }: winston.Logform.Info) => { 
         // Handles stack trace for error logs
         if (stack) {
