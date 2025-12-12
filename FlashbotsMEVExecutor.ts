@@ -5,8 +5,8 @@ import { providers, Wallet, utils, BigNumber } from 'ethers';
 import { TransactionRequest } from '@ethersproject/abstract-provider'; 
 
 import { logger } from './logger.js'; 
-// FINAL FIX TS2307: Path is relative to the new baseUrl (./src), and chains.js is inside 'config'
-import { ChainConfig } from 'config/chains.js'; 
+// FINAL FIX TS2307: Using the direct relative path from the current file (e.g., src/) to the target file (src/config/)
+import { ChainConfig } from './config/chains.js'; 
 
 export class FlashbotsMEVExecutor {
     private provider: providers.JsonRpcProvider;
