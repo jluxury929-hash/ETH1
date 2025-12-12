@@ -5,11 +5,10 @@
     "target": "ES2022",
     "outDir": "./dist",
     "rootDir": "./",
-    "baseUrl": "./", // FINAL FIX: Set baseUrl back to project root
+    "baseUrl": "./", // Base set to root
     "paths": {
-      // FINAL FIX: Map imports explicitly to 'src/*' from the root
-      "config/*": ["src/config/*"],
-      "types.js": ["src/types.ts"], // Map specific types file if needed
+      // FINAL FIX: Use a simple wildcard to cover all internal files relative to the base URL
+      "src/*": ["src/*"], 
       "*": ["node_modules/*", "*"] 
     },
     "strict": true,
