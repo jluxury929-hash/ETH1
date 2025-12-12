@@ -16,7 +16,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@flashbots/ethers-provider-bundle": "0.14.0", 
+    // FIX: Using the highly stable and publicly available version 0.13.0
+    "@flashbots/ethers-provider-bundle": "0.13.0", 
     "ethers": "^5.7.2",
     "express": "^4.18.2"
   },
