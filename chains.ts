@@ -1,7 +1,7 @@
 // config/chains.ts
 
-// FIX TS2307: Removed .js extension to simplify module resolution
-import { ChainConfig } from '../types'; 
+// FIX TS2834: Re-add .js extension for strict NodeNext module resolution
+import { ChainConfig } from '../types.js'; 
 
 function getEnv(key: string): string {
     const value = process.env[key];
