@@ -1,9 +1,8 @@
-// tsconfig.json (Reverting moduleResolution)
 {
   "compilerOptions": {
     "module": "NodeNext",
-    // FINAL FIX: Changing to 'node' to allow paths and type conflicts to resolve
-    "moduleResolution": "node", 
+    // FIX TS5109: Must be NodeNext when 'module' is NodeNext
+    "moduleResolution": "NodeNext", 
     "target": "ES2022",
     "outDir": "./dist",
     "rootDir": "./",
