@@ -8,7 +8,9 @@ import {
 
 import axios from 'axios'; 
 import * as dotenv from 'dotenv';
-import { logger } from './logger';
+import { logger } from './logger.js'; // Must be './logger.js'
+import { Strategy } from './types.js'; // Must be './types.js'
+import { FlashbotsMEVExecutor } from './FlashbotsMEVExecutor.js'; // Must be './FlashbotsMEVExecutor.js'
 import { BotConfig } from './types'; 
 import { FlashbotsMEVExecutor } from './FlashbotsMEVExecutor'; 
 
