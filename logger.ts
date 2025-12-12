@@ -3,20 +3,21 @@
 import * as winston from 'winston';
 import { TransformableInfo } from 'logform'; 
 
-// FINAL, COMPATIBLE INTERFACE
-// This is the least restrictive interface that still maintains type safety for the compiler.
+// FINAL FIX TS2430: Define the interface to strictly comply with the base TransformableInfo's requirements 
+// for properties like 'level' while still allowing for the fields we need.
 interface CustomLogInfo extends TransformableInfo {
-    // These properties are required for the printf function to work, 
-    // but made optional here to satisfy the compiler's strict check against TransformableInfo.
-    level?: string;
-    message?: any; 
-    timestamp?: string; 
+    // We explicitly define level and message as string (non-optional) to satisfy the base interface.
+    // The inner function must handle potential undefined values added by winston during the pipeline.
+    level: string; 
+    message: string; 
+    timestamp?: string; // Optional because timestamp() adds it, not the base info object
     stack?: string;
 }
 
 const logFormat = winston.format.printf(
     ({ level, message, timestamp, stack }: CustomLogInfo) => { 
-        // We use nullish coalescing to safely access the fields.
+        // We use nullish coalescing to safely access the fields, knowing they might be missing 
+        // even if the type definition requires them.
         const msg = String(message ?? '');
         const lvl = level ?? 'info';
         const time = timestamp ?? new Date().toISOString(); 
