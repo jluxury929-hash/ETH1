@@ -1,9 +1,12 @@
 // FlashbotsMEVExecutor.ts
 
 import { FlashbotsBundleProvider, FlashbotsBundleResolution } from '@flashbots/ethers-provider-bundle';
-import { providers, Wallet, utils } from 'ethers';
+// FIX TS2694: Import BigNumber directly from 'ethers'
+import { providers, Wallet, utils, BigNumber } from 'ethers'; 
 import { TransactionRequest } from '@ethersproject/abstract-provider'; 
+
 import { logger } from './logger.js'; 
+// FIX TS2307: Correct path for module resolution
 import { ChainConfig } from './config/chains.js'; 
 
 export class FlashbotsMEVExecutor {
@@ -21,9 +24,6 @@ export class FlashbotsMEVExecutor {
         this.flashbotsProvider = flashbotsProvider;
     }
 
-    /**
-     * Initializes the Flashbots Executor with the necessary signers and providers.
-     */
     static async create(
         walletPrivateKey: string,
         authPrivateKey: string,
@@ -39,8 +39,7 @@ export class FlashbotsMEVExecutor {
             authSigner,
             flashbotsUrl
         );
-
-        logger.info(`[EVM] Flashbots provider created and connected to ${flashbotsUrl}.`);
+        logger.info(`[EVM] Flashbots provider created.`);
         return new FlashbotsMEVExecutor(provider, walletSigner, flashbotsProvider);
     }
     
@@ -48,19 +47,14 @@ export class FlashbotsMEVExecutor {
         return this.walletSigner.address;
     }
 
-    /**
-     * Estimates gas parameters required for an EIP-1559 transaction.
-     * This is useful for building transactions that offer a competitive maxFee and maxPriorityFee.
-     */
-    public async getGasParameters(): Promise<{ maxFeePerGas: utils.BigNumber, maxPriorityFeePerGas: utils.BigNumber }> {
+    public async getGasParameters(): Promise<{ maxFeePerGas: BigNumber, maxPriorityFeePerGas: BigNumber }> {
         try {
             const block = await this.provider.getBlock('latest');
             const baseFeePerGas = block.baseFeePerGas || utils.parseUnits('1', 'gwei');
             
-            // Define a competitive priority fee (e.g., 3 Gwei)
             const priorityFee = utils.parseUnits('3', 'gwei'); 
             
-            // Max Fee = Base Fee * 2 + Max Priority Fee
+            // Fix using BigNumber imported directly
             const maxFeePerGas = baseFeePerGas.mul(2).add(priorityFee);
             
             return {
@@ -69,7 +63,6 @@ export class FlashbotsMEVExecutor {
             };
         } catch (error) {
             logger.error(`[EVM] Failed to get gas parameters:`, error);
-            // Fallback to safe default values
             return {
                 maxFeePerGas: utils.parseUnits('50', 'gwei'),
                 maxPriorityFeePerGas: utils.parseUnits('3', 'gwei'),
@@ -77,17 +70,11 @@ export class FlashbotsMEVExecutor {
         }
     }
 
-    /**
-     * Signs a transaction request using the wallet signer.
-     * @param transaction The transaction request object.
-     * @returns The raw, signed transaction string.
-     */
     public async signTransaction(transaction: TransactionRequest): Promise<string> {
         if (!transaction.nonce) {
             transaction.nonce = await this.provider.getTransactionCount(this.walletSigner.address, 'pending');
         }
         
-        // Add gas parameters if not present
         if (!transaction.maxFeePerGas || !transaction.maxPriorityFeePerGas) {
             const gasParams = await this.getGasParameters();
             transaction.maxFeePerGas = gasParams.maxFeePerGas;
@@ -102,11 +89,6 @@ export class FlashbotsMEVExecutor {
         }
     }
 
-    /**
-     * Sends a signed bundle of transactions to the Flashbots relay.
-     * @param signedTxs Array of raw signed transaction strings.
-     * @param blockNumber The target block number for inclusion.
-     */
     async sendBundle(
         signedTxs: string[], 
         blockNumber: number
@@ -119,7 +101,7 @@ export class FlashbotsMEVExecutor {
                 blockNumber
             );
             
-            // FIX: TS2339 - The submission object requires .wait() to monitor resolution
+            // Line 123: FIX TS2339 - The submission object requires .wait()
             const resolution = await submission.wait(); 
 
             if (resolution === FlashbotsBundleResolution.BundleIncluded) {
@@ -129,7 +111,6 @@ export class FlashbotsMEVExecutor {
             }
         } catch (error) {
             logger.error(`[Flashbots] Bundle submission error.`, error);
-            // Log the error details, often useful for debugging why the relay rejected it
             if (error && (error as any).body) {
                 logger.error(`Relay response body:`, (error as any).body);
             }
