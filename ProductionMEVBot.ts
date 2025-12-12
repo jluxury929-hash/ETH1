@@ -30,7 +30,7 @@ export class ProductionMEVBot {
 		const httpRpcUrl = process.env.ETHEREUM_RPC_1;
 		
 		if (!privateKey || !fbReputationKey || !httpRpcUrl) {
-			logger.fatal("Missing critical RPC/Key environment variables. Exiting.");
+			logger.error("Missing critical RPC/Key environment variables. Exiting."); // FIXED: Changed fatal to error
              process.exit(1);
 		}
 
@@ -62,7 +62,7 @@ export class ProductionMEVBot {
 			);
 			logger.info("Flashbots Executor initialized successfully.");
 		} catch (error) {
-			logger.fatal("Failed to initialize FlashbotsMEVExecutor.", error);
+			logger.error("Failed to initialize FlashbotsMEVExecutor.", error); // FIXED: Changed fatal to error
             process.exit(1);
 		}
 	}
@@ -74,7 +74,7 @@ export class ProductionMEVBot {
             logger.info(`[BALANCE] Current ETH Balance: ${formattedBalance} ETH`);
 
             if (balance.lt(ethers.utils.parseEther(this.config.minEthBalance.toString()))) { 
-                logger.fatal(`Balance (${formattedBalance}) is below MIN_ETH_BALANCE. Shutting down.`);
+                logger.error(`Balance (${formattedBalance}) is below MIN_ETH_BALANCE. Shutting down.`); // FIXED: Changed fatal to error
                 process.exit(1);
             }
 
@@ -82,7 +82,7 @@ export class ProductionMEVBot {
             await this.nonceManager.initialize();
 
         } catch (error) {
-            logger.fatal("Could not check balance or initialize nonce manager. Check HTTP_RPC_URL.", error);
+            logger.error("Could not check balance or initialize nonce manager. Check HTTP_RPC_URL.", error); // FIXED: Changed fatal to error
             process.exit(1);
         }
     }
@@ -94,9 +94,8 @@ export class ProductionMEVBot {
 		await this.initializeExecutor();	
         await this.checkBalanceAndNonce();
         
-        if (!this.executor || !this.nonceManager) return; // Should not happen due to fatal exits
+        if (!this.executor || !this.nonceManager) return;
 
-        // Initialize the Mempool Monitor
         this.monitor = new MempoolMonitor(
             this.httpProvider,
             this.nonceManager,
