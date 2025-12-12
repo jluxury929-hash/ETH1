@@ -1,6 +1,6 @@
 // src/FlashbotsMEVExecutor.ts
 
-import { FlashbotsBundleProvider } from '@flashbots/ethers-provider-bundle'; 
+import { FlashbotsBundleProvider, FlashbotsBundleRawTransaction } from '@flashbots/ethers-provider-bundle'; // ADDED: FlashbotsBundleRawTransaction
 import { ethers, Wallet, providers } from 'ethers';
 import { logger } from './logger.js';
 
@@ -33,8 +33,13 @@ export class FlashbotsMEVExecutor {
     ): Promise<void> {
         logger.info(`[Flashbots] Submitting bundle for block ${blockNumber}...`);
         
+        // --- FIX: Map the raw signed string array to the required Flashbots type ---
+        const flashbotsBundle: FlashbotsBundleRawTransaction[] = signedTxs.map(signedTx => ({ 
+            signedTransaction: signedTx 
+        }));
+        
         try {
-            const result = await this.flashbotsProvider.sendBundle(signedTxs, blockNumber);
+            const result = await this.flashbotsProvider.sendBundle(flashbotsBundle, blockNumber); // USED: flashbotsBundle
 
             if ('error' in result) {
                 logger.error(`[Flashbots] Bundle submission failed: ${result.error.message}`);
