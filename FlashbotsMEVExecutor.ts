@@ -1,6 +1,7 @@
 // FlashbotsMEVExecutor.ts
 
 import { FlashbotsBundleProvider, FlashbotsBundleResolution } from '@flashbots/ethers-provider-bundle';
+// FIX TS2694: Import BigNumber directly from 'ethers'
 import { providers, Wallet, utils, BigNumber } from 'ethers'; 
 import { TransactionRequest } from '@ethersproject/abstract-provider'; 
 
@@ -9,7 +10,6 @@ import { logger } from './logger.js';
 import { ChainConfig } from './config/chains.js'; 
 
 export class FlashbotsMEVExecutor {
-    // ... (constructor and create method remain unchanged)
     private provider: providers.JsonRpcProvider;
     private walletSigner: Wallet;
     private flashbotsProvider: FlashbotsBundleProvider;
@@ -23,13 +23,85 @@ export class FlashbotsMEVExecutor {
         this.walletSigner = walletSigner;
         this.flashbotsProvider = flashbotsProvider;
     }
+
+    /**
+     * Initializes the Flashbots Executor with the necessary signers and providers.
+     * FIX TS1003: Ensures syntax is clean around this definition (lines 24-27).
+     */
+    static async create(
+        walletPrivateKey: string,
+        authPrivateKey: string,
+        rpcUrl: string,
+        flashbotsUrl: string
+    ): Promise<FlashbotsMEVExecutor> {
+        const provider = new providers.JsonRpcProvider(rpcUrl);
+        const walletSigner = new Wallet(walletPrivateKey, provider);
+        const authSigner = new Wallet(authPrivateKey);
+
+        const flashbotsProvider = await FlashbotsBundleProvider.create(
+            provider,
+            authSigner,
+            flashbotsUrl
+        );
+
+        logger.info(`[EVM] Flashbots provider created and connected to ${flashbotsUrl}.`);
+        return new FlashbotsMEVExecutor(provider, walletSigner, flashbotsProvider);
+    }
     
-    static async create(...) { /* ... */ }
-    public getWalletAddress(): string { /* ... */ return this.walletSigner.address; }
-    public async getGasParameters(): Promise<{ maxFeePerGas: BigNumber, maxPriorityFeePerGas: BigNumber }> { /* ... */ }
-    public async signTransaction(transaction: TransactionRequest): Promise<string> { /* ... */ }
+    public getWalletAddress(): string {
+        return this.walletSigner.address;
+    }
 
+    /**
+     * Estimates gas parameters required for an EIP-1559 transaction.
+     */
+    public async getGasParameters(): Promise<{ maxFeePerGas: BigNumber, maxPriorityFeePerGas: BigNumber }> {
+        try {
+            const block = await this.provider.getBlock('latest');
+            const baseFeePerGas = block.baseFeePerGas || utils.parseUnits('1', 'gwei');
+            
+            const priorityFee = utils.parseUnits('3', 'gwei'); 
+            
+            const maxFeePerGas = baseFeePerGas.mul(2).add(priorityFee);
+            
+            return {
+                maxFeePerGas,
+                maxPriorityFeePerGas: priorityFee,
+            };
+        } catch (error) {
+            logger.error(`[EVM] Failed to get gas parameters:`, error);
+            return {
+                maxFeePerGas: utils.parseUnits('50', 'gwei'),
+                maxPriorityFeePerGas: utils.parseUnits('3', 'gwei'),
+            };
+        }
+    }
 
+    /**
+     * Signs a transaction request using the wallet signer.
+     */
+    public async signTransaction(transaction: TransactionRequest): Promise<string> {
+        if (!transaction.nonce) {
+            transaction.nonce = await this.provider.getTransactionCount(this.walletSigner.address, 'pending');
+        }
+        
+        if (!transaction.maxFeePerGas || !transaction.maxPriorityFeePerGas) {
+            const gasParams = await this.getGasParameters();
+            transaction.maxFeePerGas = gasParams.maxFeePerGas;
+            transaction.maxPriorityFeePerGas = gasParams.maxPriorityFeePerGas;
+        }
+
+        try {
+            return this.walletSigner.signTransaction(transaction);
+        } catch (error) {
+            logger.error(`[EVM] Failed to sign transaction:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Sends a signed bundle of transactions to the Flashbots relay.
+     */
     async sendBundle(
         signedTxs: string[], 
         blockNumber: number
