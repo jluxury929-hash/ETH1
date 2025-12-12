@@ -1,7 +1,9 @@
 // chains.ts
+// Located at: src/config/chains.ts
 
-// FINAL FIX TS2307: Path is relative to the new baseUrl (./src)
-import { ChainConfig } from 'types.js'; 
+// FINAL CORRECT PATH: Using the relative path that worked in the last successful step
+// This assumes 'types.js' resolves to 'src/types.ts' from 'src/config/'
+import { ChainConfig } from '../types.js'; 
 
 function getEnv(key: string): string {
     const value = process.env[key];
@@ -20,4 +22,5 @@ export const CHAINS: ChainConfig[] = [
         wssUrl: getEnv('ETH_WSS_URL'),
         flashbotsUrl: getEnv('FLASHBOTS_URL'),
     },
+    // Add other chain configurations as needed (e.g., Goerli, Sepolia, etc.)
 ];
