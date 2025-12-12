@@ -1,13 +1,18 @@
 // types.ts
 
-// The following types/interfaces are REQUIRED for the WorkerPool and ExecutionWorker:
+// ... existing types (Strategy, ChainConfig)
 
-// FIX: TS2305 - Exports for all missing worker members
+// FIX: TS2339 & TS2353 - Add missing fields for Worker execution
 export interface WorkerTaskData {
-    // Define the data structure passed to a worker for execution
+    // Required by ExecutionWorker.ts (Line 28)
+    txHash: string;
+    pendingTx: any; // Use a proper transaction type if possible, or 'any' temporarily
+    fees: number;
+    mevHelperContractAddress: string;
+    
+    // Existing fields for the worker to process the bundle
     txs: string[];
     blockNumber: number;
-    // Add any other data needed for a worker (e.g., config, specific strategy parameters)
 }
 
 export interface WorkerResult {
@@ -21,25 +26,13 @@ export type TaskResolver = (result: WorkerResult) => void;
 export interface WorkerTaskWrapper {
     id: number;
     data: WorkerTaskData;
-    resolver: TaskResolver;
+    resolver: TaskResolver; // FIX: Name is 'resolver', not 'resolve'
+    task: string; // FIX: TS2339/TS2353 - Used in WorkerPool.ts
 }
 
 export interface WorkerStats {
     workerId: number;
     tasksProcessed: number;
     uptimeSeconds: number;
-}
-
-// Ensure the existing necessary types are also here:
-export interface Strategy {
-    name: string;
-    isActive: boolean;
-}
-
-export interface ChainConfig {
-    chainId: number;
-    name: string;
-    httpUrl: string;
-    wssUrl: string;
-    flashbotsUrl: string;
+    totalWorkers: number; // FIX: TS2353 - Used in WorkerPool.ts
 }
