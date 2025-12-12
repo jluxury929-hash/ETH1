@@ -9,7 +9,7 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "./dist",
-    "rootDir": ".",    /* FIXED: This tells the compiler the source root is the current directory */
+    "rootDir": ".",    /* FIXED: Source root is the current directory */
 
     /* Type Checking */
     "noImplicitAny": true,
@@ -19,7 +19,7 @@
     "sourceMap": false
   },
   "include": [
-    "**/*.ts"
+    "**/*.ts"          /* FIXED: Includes all .ts files recursively */
   ],
   "exclude": [
     "node_modules",
