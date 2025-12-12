@@ -1,63 +1,75 @@
-// src/FlashbotsMEVExecutor.ts
+// FlashbotsMEVExecutor.ts
 
-import { FlashbotsBundleProvider, FlashbotsBundleRawTransaction } from '@flashbots/ethers-provider-bundle'; // ADDED: FlashbotsBundleRawTransaction
-import { ethers, Wallet, providers } from 'ethers';
-import { logger } from './logger.js';
+import { FlashbotsBundleProvider, FlashbotsBundleResolution } from '@flashbots/ethers-provider-bundle';
+import { providers, Wallet } from 'ethers';
+import { TransactionRequest } from '@ethersproject/abstract-provider'; 
+
+// FIX: Added .js extension
+import { logger } from './logger.js'; 
+import { ChainConfig } from './config/chains.js'; 
 
 export class FlashbotsMEVExecutor {
+    private provider: providers.JsonRpcProvider;
+    private walletSigner: Wallet;
+    private flashbotsProvider: FlashbotsBundleProvider;
+
     private constructor(
-        private provider: providers.JsonRpcProvider,
-        private flashbotsProvider: FlashbotsBundleProvider
-    ) {}
+        provider: providers.JsonRpcProvider,
+        walletSigner: Wallet,
+        flashbotsProvider: FlashbotsBundleProvider
+    ) {
+        this.provider = provider;
+        this.walletSigner = walletSigner;
+        this.flashbotsProvider = flashbotsProvider;
+    }
 
     static async create(
-        privateKey: string, 
-        authSignerKey: string,
+        walletPrivateKey: string,
+        authPrivateKey: string,
         rpcUrl: string,
         flashbotsUrl: string
     ): Promise<FlashbotsMEVExecutor> {
+        // ... (initialization logic)
         const provider = new providers.JsonRpcProvider(rpcUrl);
-        const authSigner = new Wallet(authSignerKey);
+        const walletSigner = new Wallet(walletPrivateKey, provider);
+        const authSigner = new Wallet(authPrivateKey);
 
         const flashbotsProvider = await FlashbotsBundleProvider.create(
             provider,
             authSigner,
             flashbotsUrl
         );
-        return new FlashbotsMEVExecutor(provider, flashbotsProvider);
+
+        logger.info(`[EVM] Flashbots provider created.`);
+        return new FlashbotsMEVExecutor(provider, walletSigner, flashbotsProvider);
+    }
+    
+    public getWalletAddress(): string {
+        return this.walletSigner.address;
     }
 
     async sendBundle(
         signedTxs: string[], 
         blockNumber: number
     ): Promise<void> {
-        logger.info(`[Flashbots] Submitting bundle for block ${blockNumber}...`);
-        
-        // --- FIX: Map the raw signed string array to the required Flashbots type ---
-        const flashbotsBundle: FlashbotsBundleRawTransaction[] = signedTxs.map(signedTx => ({ 
-            signedTransaction: signedTx 
-        }));
-        
+        logger.info(`[Flashbots] Submitting bundle to block ${blockNumber}...`);
+
         try {
-            const result = await this.flashbotsProvider.sendBundle(flashbotsBundle, blockNumber); // USED: flashbotsBundle
-
-            if ('error' in result) {
-                logger.error(`[Flashbots] Bundle submission failed: ${result.error.message}`);
-                return;
-            }
-
-            logger.info(`[Flashbots] Bundle sent. Awaiting receipt...`);
+            const submission = await this.flashbotsProvider.sendRawBundle(
+                signedTxs, 
+                blockNumber
+            );
             
-            const waitResponse = await result.wait();
-            
-            if (waitResponse === 0) {
-                logger.warn(`[Flashbots] Bundle was not included in block ${blockNumber}. (Tip too low/lost race)`);
-            } else {
-                logger.info(`[Flashbots] Bundle successfully included in block ${blockNumber}! PROFIT EXECUTION CONFIRMED.`);
-            }
+            // FIX: TS2339 - Correct usage of the wait method 
+            const resolution = await submission.wait(); 
 
+            if (resolution === FlashbotsBundleResolution.BundleIncluded) {
+                logger.info(`[Flashbots SUCCESS] Bundle included in block ${blockNumber}.`);
+            } else if (resolution === FlashbotsBundleResolution.BlockPassedWithoutInclusion) {
+                logger.warn(`[Flashbots FAIL] Bundle was not included.`);
+            }
         } catch (error) {
-            logger.error(`[Flashbots] Submission error.`, error);
+            logger.error(`[Flashbots] Bundle submission error.`, error);
         }
     }
 }
