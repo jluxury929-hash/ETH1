@@ -1,9 +1,8 @@
 // chains.ts
-// Located at: src/config/chains.ts
+// Corrected import path assumes types.ts is in the same directory (root)
 
-// FINAL CORRECT PATH: Using the relative path that worked in the last successful step
-// This assumes 'types.js' resolves to 'src/types.ts' from 'src/config/'
-import { ChainConfig } from '../types.js'; 
+// FINAL PATH FIX: types.ts is a peer file, not in a parent directory
+import { ChainConfig } from './types.js'; 
 
 function getEnv(key: string): string {
     const value = process.env[key];
@@ -22,5 +21,4 @@ export const CHAINS: ChainConfig[] = [
         wssUrl: getEnv('ETH_WSS_URL'),
         flashbotsUrl: getEnv('FLASHBOTS_URL'),
     },
-    // Add other chain configurations as needed (e.g., Goerli, Sepolia, etc.)
 ];
